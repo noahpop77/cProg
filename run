@@ -1,6 +1,6 @@
 #!/bin/bash
 
 
-gcc main.c -o main
+gcc main.c -o outmain
 
-./main
+./outmain
