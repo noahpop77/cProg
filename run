@@ -4,3 +4,4 @@
 gcc main.c -o outmain
 
 ./outmain
+rm outmain
