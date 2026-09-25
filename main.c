@@ -1,8 +1,8 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-
 /*
+============
+NOTES
+============
+
 Pre Processor Macros-----------------------------
     Pre Processor macros included with <unistd.h>
     
@@ -29,6 +29,11 @@ Struct termios structure-------------------------
 int     tcgetattr(int, struct termios *);
 int     tcsetattr(int, int, const struct termios *);
 
+
+    The elements of the struct are bitmasks. Each
+    bit in the bitmask is a configurable flag which
+    can be set.
+    
 struct termios {
 	tcflag_t        c_iflag;      //  input flags
 	tcflag_t        c_oflag;      //  output flags
@@ -41,47 +46,89 @@ struct termios {
 
 ANSII codes--------------------------------------
 
-
     Code to enter alt mode
         \x1b[?1049h\x1b[H
     Code to exit alt mode
         \x1b[?1049l
     Color a character red (in this case an empty space)
         \033[41m \033[0m
+
+enterCustomTermMode() ---------------------------------------------
+
+Read one character at a time
+VMIN and VTIME are special non canonical flags
+VMIN = characters per non-canonical read
+VTIME = time delay in deciseconds between reads
+
+https://man7.org/linux/man-pages/man3/termios.3.html
+     ctrl + f for cfmakeraw
+
+rawTerm.c_lflag &= ~(ICANON | ECHO);
+
+Replaces ^^^^^^^^^^^^^^^^^^^^^^^^^^^ with cfmakeraw(). 
+Doing it with cfmakeraw is the function supported way of 
+putting a terminal in raw mode and the above method is 
+the manual way of altering the bitmask to do so.
+
+printBox(int x) ------------------------------------------------------
+
+Repeats the printing of a colored box horizontally for X amount of cells
+
+You can replace the empty space in the print with any text to color it
+printf("\033[41m \033[0m")
+                ^
+
 */
 
 
+#include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+
+static int termWidth;
+static int termHeight;
+
+void getTermSize() {
+
+    struct winsize termSize;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &termSize);
+    termWidth = termSize.ws_col;
+    termHeight = termSize.ws_row;
+}
+
 struct termios enterCustomTermMode () {
-    // Enter alt mode
-    printf("\x1b[?1049h\x1b[H");
+
+    getTermSize();
+
+    printf("\x1b[?1049h\x1b[H"); // Enter alt mode
     fflush(stdout);
     
     // Enter raw mode
     struct termios originalTerm, rawTerm;
     tcgetattr(STDIN_FILENO, &originalTerm);
+    
 
-    rawTerm.c_lflag &= ~(ICANON | ECHO);
+    rawTerm = originalTerm;
+    cfmakeraw(&rawTerm);
 
-    // Read one character at a time
+
     rawTerm.c_cc[VMIN] = 1;
     rawTerm.c_cc[VTIME] = 0;
+
     tcsetattr(STDIN_FILENO, TCSANOW, &rawTerm);
 
-    // Has to pass state of terminal to use in exitCustomTermMode
-    return originalTerm;
+    return originalTerm; // Pass state of terminal to use in exitCustomTermMode
 }
 
 void exitCustomTermMode (struct termios orig_termios) {
-    // Restore original termios attributes
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); // Rvrt trm 2 org
 
-    // Leave alt screen buffer
-    printf("\x1b[?1049l");
+    printf("\x1b[?1049l"); // Leave alt screen buffer
     fflush(stdout);
 }
 
-// Repeats the printing of a colored box horizontally for X amount of cells
-//      You can replace the empty space in the print with any text to color it
+
 void printBox(int cells) {
     for (int i = 0; i < cells ; i ++) {
         printf("\033[41m \033[0m");
@@ -91,27 +138,30 @@ void printBox(int cells) {
 
 int main(void)
 {
+
+    // -------------------------------------------------
     struct termios termSettings = enterCustomTermMode();
 
-    // ---- Term alt screen code goes here ----
-    printf("STDIN_FILENO is an int with value: %d\r\n", STDIN_FILENO);
-    printf("STDOUT_FILENO is an int with value: %d\r\n", STDOUT_FILENO);
-    printf("STDERR_FILENO is an int with value: %d\r\n", STDERR_FILENO);
+    printBox(termWidth);
 
-    printBox(20);
+    printf("STDIN_FILENO\t(%d)\r\n", STDIN_FILENO);
+    printf("STDOUT_FILENO\t(%d)\r\n", STDOUT_FILENO);
+    printf("STDERR_FILENO\t(%d)\r\n", STDERR_FILENO);
 
+    printf("Terminal Width = %d\r\n", termWidth);
+    
     printf("Welcome to Alt Mode!\r\n");
-    printf("Press enter to quit...\r\n");
+    printf("Press q to quit...\r\n");
+    
+    printBox(termWidth);
     fflush(stdout);
 
-    //getchar(); 
-    
     char key;
     while ((key = getchar()) != 'q'){}
 
-    // -------------------------------------------------
     
     exitCustomTermMode(termSettings);
+    // -------------------------------------------------
 
     return 0;
 
