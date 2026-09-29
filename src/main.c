@@ -77,7 +77,7 @@ Doing it with cfmakeraw is the function supported way of
 putting a terminal in raw mode and the above method is 
 the manual way of altering the bitmask to do so.
 
-printBox(int x) ------------------------------------------------------
+printBox(int x) ------------------------------------------------------1 2 3 4 5 6 7 8
 
 Repeats the printing of a colored box horizontally for X amount of cells
 
@@ -118,25 +118,89 @@ int strcmpr(char *first, char *second) {
     return 0;
 }
 
+void printBarrage(char *in_str, int count) {
+    for (int i = 0; i < count; i++) {
+        printf("%s", in_str);
+    }
+}
+
 // BOX CODE HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 void printBox(char *input_string) {
     struct TermSize termSize = {0};
     termSize = setTermSize(termSize);
     int input_length = stringLength(input_string);
-
-    int padding = (termSize.termWidth - input_length) / 2;
-
-    for (int i = 0; i < padding; i++) {
+    int x = termSize.termWidth/2;
+    int x_shift = termSize.termWidth/4;
+    int y = termSize.termHeight/2;
+    int y_shift = termSize.termHeight / 4;
+    
+    for (int i = 0; i < y_shift; i++) {
+        printf("\r\n");
+    }
+    for (int i = 0; i < x_shift; i++) {
         printf(" ");
     }
-
-    // YOUR TEXT GOES HERE
-    printf("%s", input_string);
-
-    for (int i = 0; i < padding; i++) {
+    printBarRange(x);
+    for (int i = 0; i <= x_shift-1; i++) {
         printf(" ");
     }
-    printf("\r\n"); 
+    printf("\r\n");
+
+    for (int i = 0; i < y; i++) {
+        
+        // Handles case of printing the actual line with the text in it
+        if (i == y_shift){
+            printBarrage(" ", x_shift);
+            printf("\033[41m  \033[0m");
+
+            // For odd length input_string we rmv 1 extra " " from start
+            if ((input_length) % 2 == 1) {
+                printBarrage(" ", x_shift - input_length/2 - 3);
+            } else {
+                printBarrage(" ", x_shift - input_length/2 - 2);
+            }
+            printf("%s", input_string);
+            printBarrage(" ", x_shift - input_length/2 - 2); 
+            printf("\033[41m  \033[0m");
+            printBarrage(" ", x_shift);
+            printf("\r\n");
+            continue;
+        }
+
+        // Handles printing inner box content with 
+        // width pad < > box wall < > inner pad <> box wall < > width pad
+        for (int i = 0; i < termSize.termWidth-2; i++) {
+            
+            // Mod calc to make square consistent acrosss trm sizes            
+            if (x % x_shift == 1 ){
+                if (i == x_shift || i == (x_shift*3) - 2){
+                    printf("\033[41m  \033[0m");
+                    continue;
+                }
+            }
+            else {
+                if (i == x_shift || i == (x_shift*3) - 3){
+                    printf("\033[41m  \033[0m");
+                    continue;
+                }
+            }
+            printf(" ");
+        }
+    }
+
+    printf("\r\n");
+    for (int i = 0; i < x_shift; i++) {
+        printf(" ");
+    }
+    printBarRange(x);
+    for (int i = 0; i <= x_shift-1; i++) {
+        printf(" ");
+    }
+    printf("\r\n");
+    // printf("x_shift = %d\r\n", x_shift);
+    // printf("x = %d\r\n", x);
+    // printf("x_shift = %d\r\n", x_shift);
+    
 }
 
 // 3 code paths---------------------

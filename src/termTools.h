@@ -83,6 +83,12 @@ void printBar(int cells) {
     printf("\r\n");
 }
 
+void printBarRange(int cells) {
+    for (int i = 0; i < cells ; i ++) {
+        printf("\033[41m \033[0m");
+    }
+}
+
 
 
 // TODO: Add a way to do things like ("%d", myInt)
