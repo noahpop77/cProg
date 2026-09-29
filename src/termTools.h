@@ -28,6 +28,17 @@ struct TermSize {
     int termHeight;
 };
 
+int strcmpr(char *first, char *second) {
+    while (*first == *second) {
+        if (*first != '\0' && *second != '\0') {
+            return 1;
+        }
+        first++;
+        second++;
+    }
+    return 0;
+}
+
 int stringLength(const char *input_string) {
     const char *ptr = input_string;
     while (*ptr != '\0') {
@@ -89,7 +100,111 @@ void printBarRange(int cells) {
     }
 }
 
+void printBarrage(char *in_str, int count) {
+    for (int i = 0; i < count; i++) {
+        printf("%s", in_str);
+    }
+}
 
+// BOX CODE HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+void printBox(char *input_string) {
+    struct TermSize termSize = {0};
+    termSize = setTermSize(termSize);
+    int input_length = stringLength(input_string);
+    int x = termSize.termWidth/2;
+    int x_shift = termSize.termWidth/4;
+    int y = termSize.termHeight/2;
+    int y_shift = termSize.termHeight / 4;
+    
+    for (int i = 0; i < y_shift; i++) {
+        printf("\r\n");
+    }
+    for (int i = 0; i < x_shift; i++) {
+        printf(" ");
+    }
+    printBarRange(x);
+    for (int i = 0; i <= x_shift-1; i++) {
+        printf(" ");
+    }
+    printf("\r\n");
+
+    for (int i = 0; i < y; i++) {
+        
+        // Handles case of printing the actual line with the text in it
+        if (i == y_shift){
+            printBarrage(" ", x_shift);
+            printf("\033[41m  \033[0m");
+
+            // For odd length input_string we rmv 1 extra " " from start
+            if ((input_length) % 2 == 1) {
+                printBarrage(" ", x_shift - input_length/2 - 3);
+            } else {
+                printBarrage(" ", x_shift - input_length/2 - 2);
+            }
+            printf("%s", input_string);
+            printBarrage(" ", x_shift - input_length/2 - 2); 
+            printf("\033[41m  \033[0m");
+            printBarrage(" ", x_shift);
+            printf("\r\n");
+            continue;
+        }
+
+        // Handles printing inner box content with 
+        // width pad < > box wall < > inner pad <> box wall < > width pad
+        for (int i = 0; i < termSize.termWidth-2; i++) {
+            
+            // Mod calc to make square consistent acrosss trm sizes            
+            if (x % x_shift == 1 ){
+                if (i == x_shift || i == (x_shift*3) - 2){
+                    printf("\033[41m  \033[0m");
+                    continue;
+                }
+            }
+            else {
+                if (i == x_shift || i == (x_shift*3) - 3){
+                    printf("\033[41m  \033[0m");
+                    continue;
+                }
+            }
+            printf(" ");
+        }
+    }
+
+    printf("\r\n");
+    for (int i = 0; i < x_shift; i++) {
+        printf(" ");
+    }
+    printBarRange(x);
+    for (int i = 0; i <= x_shift-1; i++) {
+        printf(" ");
+    }
+    printf("\r\n");
+    
+}
+
+// Box Handler
+// 3 code paths---------------------
+// 1. -box is there, text is valid
+// 2. -box is there, text isnt valid
+// 3. no -box
+int boxText(int argc, char **argv) {
+    for (int i = 0; i < argc; i++) {
+        if (strcmpr(argv[i], "-box")) {
+            if ((i+1) >= argc) {
+                // 2
+                return 1;
+            }
+            else {
+                // TODO: BOX FUNCTIONALITY HERE IN printBox
+                printBox(argv[i+1]);
+                // 1
+                return 2;
+            }
+        }
+    }
+    // 3
+    return 0;
+}
 
 // TODO: Add a way to do things like ("%d", myInt)
 void printCenterText(const char *input_string) {
