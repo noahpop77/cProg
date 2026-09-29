@@ -29,7 +29,6 @@ Struct termios structure-------------------------
 int     tcgetattr(int, struct termios *);
 int     tcsetattr(int, int, const struct termios *);
 
-
     The elements of the struct are bitmasks. Each
     bit in the bitmask is a configurable flag which
     can be set.
@@ -43,6 +42,14 @@ struct termios {
 	speed_t         c_ispeed;     //  input speed
 	speed_t         c_ospeed;     //  output speed
 };
+
+    The below pre processor macros are just constants
+    that are used to specify which file descriptor
+    you want to write to.
+
+STDIN_FILENO  = 0
+STDOUT_FILENO = 1
+STDERR_FILENO = 2
 
 ANSII codes--------------------------------------
 
@@ -80,88 +87,119 @@ printf("\033[41m \033[0m")
 
 */
 
+// FUN implement strcmp from scratch with pointer arith
 
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
-#include <sys/ioctl.h>
 
-static int termWidth;
-static int termHeight;
+#define LIBRARY_IMPLEMENTATION
+#include "termTools.h"
 
-void getTermSize() {
+/*
 
-    struct winsize termSize;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &termSize);
-    termWidth = termSize.ws_col;
-    termHeight = termSize.ws_row;
-}
+   CLI Flags:
+   -box "text"
+        Prints the text in a centered box
 
-struct termios enterCustomTermMode () {
+   -file "filename"
+        Reads a filename and prints its contents
+        inside of the usual formatting
+*/
 
-    getTermSize();
-
-    printf("\x1b[?1049h\x1b[H"); // Enter alt mode
-    fflush(stdout);
-    
-    // Enter raw mode
-    struct termios originalTerm, rawTerm;
-    tcgetattr(STDIN_FILENO, &originalTerm);
-    
-
-    rawTerm = originalTerm;
-    cfmakeraw(&rawTerm);
-
-
-    rawTerm.c_cc[VMIN] = 1;
-    rawTerm.c_cc[VTIME] = 0;
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &rawTerm);
-
-    return originalTerm; // Pass state of terminal to use in exitCustomTermMode
-}
-
-void exitCustomTermMode (struct termios orig_termios) {
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); // Rvrt trm 2 org
-
-    printf("\x1b[?1049l"); // Leave alt screen buffer
-    fflush(stdout);
-}
-
-
-void printBox(int cells) {
-    for (int i = 0; i < cells ; i ++) {
-        printf("\033[41m \033[0m");
+int strcmpr(char *first, char *second) {
+    while (*first == *second) {
+        if (*first != '\0' && *second != '\0') {
+            return 1;
+        }
+        first++;
+        second++;
     }
-    printf("\r\n");
+    return 0;
 }
 
-int main(void)
+// BOX CODE HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+void printBox(char *input_string) {
+    struct TermSize termSize = {0};
+    termSize = setTermSize(termSize);
+    int input_length = stringLength(input_string);
+
+    int padding = (termSize.termWidth - input_length) / 2;
+
+    for (int i = 0; i < padding; i++) {
+        printf(" ");
+    }
+
+    // YOUR TEXT GOES HERE
+    printf("%s", input_string);
+
+    for (int i = 0; i < padding; i++) {
+        printf(" ");
+    }
+    printf("\r\n"); 
+}
+
+// 3 code paths---------------------
+// 1. -box is there, text is valid
+// 2. -box is there, text isnt valid
+// 3. no -box
+int boxText(int argc, char **argv) {
+    for (int i = 0; i < argc; i++) {
+        if (strcmpr(argv[i], "-box")) {
+            if ((i+1) >= argc) {
+                // 2
+                return 1;
+            }
+            else {
+                // TODO: BOX FUNCTIONALITY HERE IN printBox
+                printBox(argv[i+1]);
+                // 1
+                return 2;
+            }
+        }
+    }
+    // 3
+    return 0;
+}
+
+// Main Entrypoint of code
+int main(int argc, char **argv)
 {
+    // Program wide terminal size struct, no global vars
+    struct TermSize termSize = {0};
+    termSize = setTermSize(termSize);
 
-    // -------------------------------------------------
+    // Enter alt mode
     struct termios termSettings = enterCustomTermMode();
-
-    printBox(termWidth);
-
-    printf("STDIN_FILENO\t(%d)\r\n", STDIN_FILENO);
-    printf("STDOUT_FILENO\t(%d)\r\n", STDOUT_FILENO);
-    printf("STDERR_FILENO\t(%d)\r\n", STDERR_FILENO);
-
-    printf("Terminal Width = %d\r\n", termWidth);
     
-    printf("Welcome to Alt Mode!\r\n");
+    int boxStatus = boxText(argc, argv);
+    if (boxStatus == 1) {
+        exitCustomTermMode(termSettings);
+        printf("No valid input for -box provided\r\n");
+        return 1;
+    } else if (boxStatus == 2) { 
+        char key;
+        while ((key = getchar()) != 'q'){}
+        exitCustomTermMode(termSettings);
+        return 0;
+    }
+
+    printBar(termSize.termWidth);
+    printCenterText("BENOS");
+    printCenterText("Welcome to ALT mode!");
+
+    for (int i = 0; i < argc; i++) { printf("%s\r\n", argv[i]); }
+
     printf("Press q to quit...\r\n");
     
-    printBox(termWidth);
+    printBar(termSize.termWidth);
     fflush(stdout);
-
+    
+    // Awaits Q to exit program
     char key;
     while ((key = getchar()) != 'q'){}
-
     
     exitCustomTermMode(termSettings);
-    // -------------------------------------------------
 
     return 0;
 
