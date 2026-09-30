@@ -21,16 +21,34 @@ int stringLength(const char *input_string)
 #include <termios.h>
 #include <sys/ioctl.h>
 
-#ifdef LIBRARY_IMPLEMENTATION
 
 struct TermSize {
     int termWidth;
     int termHeight;
 };
 
-int strcmpr(char *first, char *second) {
+int strcmpr(const char *first, const char *second);
+int stringLength(const char *input_string);
+struct TermSize setTermSize(struct TermSize termSize);
+struct termios enterCustomTermMode ();
+void exitCustomTermMode (struct termios orig_termios);
+void printBar(int cells);
+void printBarRange(int cells);
+void printBarrage(const char *in_str, int count);
+void printBox(char *input_string);
+int  cliFlagChecker(int argc, char **argv);
+void printCenterText(const char *input_string);
+void titlecard(int argc, char **argv);
+
+#ifndef TERM_HELPER
+#define TERM_HELPER
+
+#ifdef TERM_IMPL
+
+int strcmpr(const char *first, const char *second) {
     while (*first == *second) {
-        if (*first != '\0' && *second != '\0') {
+        // if (*first != '\0' && *second != '\0') {
+        if (*first == '\0') {
             return 1;
         }
         first++;
@@ -98,13 +116,51 @@ void printBarRange(int cells) {
     for (int i = 0; i < cells ; i ++) {
         printf("\033[41m \033[0m");
     }
+    printf("\r\n");
 }
 
-void printBarrage(char *in_str, int count) {
+void printBarrage(const char *in_str, int count) {
     for (int i = 0; i < count; i++) {
         printf("%s", in_str);
     }
 }
+
+void titlecard(int argc, char **argv) {
+    struct TermSize termSize = {0};
+    termSize = setTermSize(termSize);
+    int x = termSize.termWidth/2;
+    int x_shift = termSize.termWidth/4;
+    int y_shift = termSize.termHeight / 3;
+    
+    for (int i = 0; i < y_shift; i++) {
+        printf("\r\n");
+    }
+    for (int i = 0; i < x_shift; i++) {
+        printf(" ");
+    }
+    printBarRange(x);
+    printf("\r\n");
+
+    for (int i = 0; i < argc; i++) {
+        if (strcmpr(argv[i], "-titlecard")) {
+            for (int title = i + 1; title < argc; title++) {
+                printCenterText(argv[title]);
+            }
+        }
+    }
+
+    printf("\r\n");
+    for (int i = 0; i < x_shift; i++) {
+        printf(" ");
+    }
+    printBarRange(x);
+    for (int i = 0; i <= x_shift-1; i++) {
+        printf(" ");
+    }
+    printf("\r\n");
+    
+}
+
 
 // BOX CODE HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 void printBox(char *input_string) {
@@ -123,10 +179,10 @@ void printBox(char *input_string) {
         printf(" ");
     }
     printBarRange(x);
-    for (int i = 0; i <= x_shift-1; i++) {
-        printf(" ");
-    }
-    printf("\r\n");
+    // for (int i = 0; i <= x_shift-1; i++) {
+    //     printf(" ");
+    // }
+    // printf("\r\n");
 
     for (int i = 0; i < y; i++) {
         
@@ -175,10 +231,10 @@ void printBox(char *input_string) {
         printf(" ");
     }
     printBarRange(x);
-    for (int i = 0; i <= x_shift-1; i++) {
-        printf(" ");
-    }
-    printf("\r\n");
+    // for (int i = 0; i <= x_shift-1; i++) {
+    //     printf(" ");
+    // }
+    // printf("\r\n");
     
 }
 
@@ -187,7 +243,7 @@ void printBox(char *input_string) {
 // 1. -box is there, text is valid
 // 2. -box is there, text isnt valid
 // 3. no -box
-int boxText(int argc, char **argv) {
+int cliFlagChecker(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
         if (strcmpr(argv[i], "-box")) {
             if ((i+1) >= argc) {
@@ -197,6 +253,16 @@ int boxText(int argc, char **argv) {
             else {
                 // TODO: BOX FUNCTIONALITY HERE IN printBox
                 printBox(argv[i+1]);
+                // 1
+                return 2;
+            }
+        } else if (strcmpr(argv[i], "-titlecard")) {
+            if ((i+1) >= argc) {
+                // 2
+                return 1;
+            }
+            else {
+                titlecard(argc, argv);
                 // 1
                 return 2;
             }
@@ -227,4 +293,7 @@ void printCenterText(const char *input_string) {
     }
     printf("\r\n");
 }
+
+#endif
+
 #endif

@@ -93,7 +93,7 @@ printf("\033[41m \033[0m")
 #include <unistd.h>
 #include <termios.h>
 
-#define LIBRARY_IMPLEMENTATION
+#define TERM_IMPL
 #include "termTools.h"
 
 // Main Entrypoint of code
@@ -106,12 +106,12 @@ int main(int argc, char **argv)
     // Enter alt mode
     struct termios termSettings = enterCustomTermMode();
     
-    int boxStatus = boxText(argc, argv);
-    if (boxStatus == 1) {
+    int cliStatus = cliFlagChecker(argc, argv);
+    if (cliStatus == 1) {
         exitCustomTermMode(termSettings);
         printf("No valid input for -box provided\r\n");
         return 1;
-    } else if (boxStatus == 2) { 
+    } else if (cliStatus == 2) { 
         char key;
         while ((key = getchar()) != 'q'){}
         exitCustomTermMode(termSettings);
