@@ -14,6 +14,13 @@ command that will run:
 
 `gcc -Wall -Wextra -o runnob nob.c && ./runnob && ./build/term`
 
+# Bootstrapping The Program
+
+From here all you need to do to bootstrap your program execution to execution is previx it with the nob binary. 
+
+`./runnob && build/term`
+
+> Even if you change the `nob.c` code, ./runnob will check if there were changes made, rebuild the nob binary, and continue with execution.
 
 # CLI Flags
 
