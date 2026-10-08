@@ -89,6 +89,7 @@ printf("\033[41m \033[0m")
 
 // FUN implement strcmp from scratch with pointer arith
 
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
@@ -99,6 +100,35 @@ printf("\033[41m \033[0m")
 // Main Entrypoint of code
 int main(int argc, char **argv)
 {
+
+
+    // long double sum = 0;
+    // for (int i = 1; i <= 828000; i++) {
+    //     long double odd_num = 2 * i - 1;
+    //     sum += odd_num * odd_num;
+    // }
+    //
+    // printf("%Lf\r\n", sum);
+
+    uint64_t N = 828000;
+    uint64_t testn = 125000;
+    uint64_t x = testn / 2;
+    // Exactly half of the integers from 1 to N are odd
+    uint64_t k = N / 2;
+    
+    // (4k^3 + 6k^2 + 2k) / 3
+    // Equivilent: 2k(k+1)(2k+1) / 3
+    uint64_t my_sum = ((4*x*x*x) + (6*x*x) + (2*x))/3;
+    // Formula for sum of first k odd squares: k * (4 * k^2 - 1) / 3
+    uint64_t total_sum = k * (4 * k * k - 1) / 3;
+    
+    // %glu for unsigned 64-bit integers (PRIu64 format)
+    printf("Sum of odd squares: %llu\r\n", (unsigned long long)total_sum);
+    printf("Sum of even squares till 125k: %llu\r\n", (unsigned long long)my_sum);
+
+
+
+
     // Program wide terminal size struct, no global vars
     struct TermSize termSize = {0};
     termSize = setTermSize(termSize);

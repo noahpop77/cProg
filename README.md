@@ -40,3 +40,10 @@ Prints the text inside of a flexible box that will follow the total dimensions o
 
 This prints two centered lines and between it your text. Rather than caring only about the FOLLOWNING cli argument, `-titlecard` prints all arguments after it as titlecard items.
 
+
+
+
+
+### Possible Projects
+
+- Hex viewer for binaries
