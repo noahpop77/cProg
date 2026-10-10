@@ -54,8 +54,8 @@ Grid generateLatinSquare(int blockDim) {
     // Creates a 2d vector grid with zeroed out cells of dimmensions size x size
     Grid grid = Grid(size, std::vector<int>(size, 0));
 
-    for (int r = 0; r < size; ++r) {    // O(N^2)
-        for (int c = 0; c < size; ++c) {
+    for (int r = 0; r < size; r++) {    // O(N^2)
+        for (int c = 0; c < size; c++) {
             // Generates the latin square with numbered rows on shifted offsets 
             // Sudoku rule valid
             grid[r][c] = ((r % blockDim) * blockDim + (r / blockDim) + c) % size + 1;
@@ -80,7 +80,7 @@ void shuffleDigits(Grid& grid, int size, std::mt19937& rng) {
 // Shuffles rows in band
 // As long as row shuffles are in band they sodoku rules arent broken
 void shuffleRowInBand(Grid& grid, int blockDim, std::mt19937& rng) {
-    for (int band = 0; band < blockDim; ++band) {
+    for (int band = 0; band < blockDim; band++) {
         int bandStart = band * blockDim;
         std::shuffle(grid.begin() + bandStart, grid.begin() + bandStart + blockDim, rng);
     }
@@ -98,7 +98,7 @@ void shuffleColInBand(Grid& grid, int blockDim, std::mt19937& rng) {
         std::iota(colOffsets.begin(), colOffsets.end(), 0);     // [0, 1, 2]
         std::shuffle(colOffsets.begin(), colOffsets.end(), rng);// [2, 0, 1]
 
-        for (int r = 0; r < size; ++r) {    // Loops over every row in the grid
+        for (int r = 0; r < size; r++) {    // Loops over every row in the grid
             // Snapshots the row contents before overwriting them
             std::vector<int> originalCol(blockDim); 
             
@@ -135,8 +135,8 @@ void zeroOutCells(Grid& grid, int blockDim, double removeRatio, std::mt19937& rn
     // Generates vector with all possible coordinates in the total grid
     std::vector<Cell> cells;
     cells.reserve(totalCells); // preallocates memory for vec, no alloc needed
-    for (int r = 0; r < size; ++r) {
-        for (int c = 0; c < size; ++c) {
+    for (int r = 0; r < size; r++) {
+        for (int c = 0; c < size; c++) {
             cells.push_back({r, c});
         }
     }
@@ -144,7 +144,7 @@ void zeroOutCells(Grid& grid, int blockDim, double removeRatio, std::mt19937& rn
     std::shuffle(cells.begin(), cells.end(), rng); // Shuffles the coordinates
 
     int removed = 0;
-    for (int i = 0; i < cells.size(); ++i) {
+    for (int i = 0; i < cells.size(); i++) {
         if (removed >= targetRemovals) { break; }
 
         const Cell& cell = cells[i];
@@ -158,18 +158,21 @@ void zeroOutCells(Grid& grid, int blockDim, double removeRatio, std::mt19937& rn
     }
 }
 
+// If you need new flags just add an additional conditional with your flag
+// and its functionality.
 void cliFlags(int argc, char* argv[], int &blockDim, double &removalRatio) {
     // Parse command-line flags
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
 
         if ((arg == "-b" || arg == "--block-dim") && i + 1 < argc) {
-            blockDim = std::stoi(argv[++i]);
+            blockDim = std::stoi(argv[i + 1]);
+            i++;
         } else if ((arg == "-r" || arg == "--removal-ratio") && i + 1 < argc) {
-            removalRatio = std::stod(argv[++i]);
+            removalRatio = std::stod(argv[i + 1]);
+            i++;
         }
     }
-
 }
 
 int main(int argc, char* argv[]) {
@@ -200,3 +203,27 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+/*
+Tests I Would Implement:
+
+Mandatory -----------------------
+- Input parameter sanity checking
+    - Type checks
+    - Bounds checks
+- Sudoku rule checking
+    - Obviously if there are duplicate numbers in the
+    same row, column, or band
+
+Nice-To-Haves -------------------
+- RNG seeding determinism
+    - 2 different mt19937 rng devices with the 
+    same seed should produce the same output
+        - Might want to "replay" specific grid states 
+        for testing or just replaying the same puzzle
+
+- Removal ratio accuracy
+    - Odd numbers & rounding behavior
+    - Values of 0.0 or 1.0
+
+*/
