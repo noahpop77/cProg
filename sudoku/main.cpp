@@ -205,7 +205,9 @@ int main(int argc, char* argv[]) {
 }
 
 /*
+=====================================================
 Tests I Would Implement:
+=====================================================
 
 Mandatory -----------------------
 - Input parameter sanity checking
@@ -225,5 +227,45 @@ Nice-To-Haves -------------------
 - Removal ratio accuracy
     - Odd numbers & rounding behavior
     - Values of 0.0 or 1.0
+
+
+=====================================================
+Optimizations:
+=====================================================
+
+I did not explore if there are mathematical formula
+that eliminate the N^2 functions in the program.
+Might be possible.
+
+Pros ------------------------------------------------
+    Could offer O(N*log(N)) time complexity or better
+    as opposed to O(N^2) time complexity
+
+Cons ------------------------------------------------
+    Chances of a human playing a game of 25x25+ game
+    of sudoku is extremely small and optimizations
+    would mainly show benefit in these cases.
+
+Ex --------------------------------------------------
+    A formula to calculate sum of odd squares in a series
+    rather than brute forcing it.
+
+
+
+Compiler Flags ======================================
+
+-O2
+    Performs general optimizations
+
+-O3
+    Turns on agressive performance optimizations.
+    This can lead to larger binary sizes which hurts
+    CPU cache efficiency
+
+-Oz
+    Prioritizes space saving over execution time improvements
+    Can improve cache efficiency which might provide
+    more improvements over -03
+
 
 */
