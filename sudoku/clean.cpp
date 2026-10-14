@@ -3,12 +3,11 @@
 #include <numeric>
 #include <random>
 #include <algorithm>
-#include <iomanip>
 
 // Alias for a 2d array 
 using Grid = std::vector<std::vector<int>>;
 
-// Will represent 1 cell in our grid
+// Represents 1 cell in our grid
 struct Cell {
     int r, c;
 };
@@ -33,12 +32,16 @@ void printGrid(const Grid& grid, int blockDim) {
             if (grid[r][c] == 0) {
                 std::cout << " . ";
             } else {
-                std::cout << std::setw(2) << grid[r][c] << " ";
+                // Makes single and double digit numbers align properly
+                if (grid[r][c] < 10) {
+                    std::cout << " "; 
+                }
+                std::cout << grid[r][c] << " ";
             }
         }
-        std::cout << "\n";
+        std::cout << "\n"; // New line at end of row
     }
-    std::cout << "\n";
+    std::cout << "\n";  // New line at end of grid
 }
 
 Grid generateLatinSquare(int blockDim) {
@@ -56,6 +59,9 @@ Grid generateLatinSquare(int blockDim) {
     return grid;
 }
 
+// The latin square will never have 0 in it so 0 will never be accidentally
+// placed inside of the square with the randomized digits
+// Its a number swap excluding zero
 void shuffleDigits(Grid& grid, int size, std::mt19937& rng) {
 // Vector -  9x9 = size 10
 // iota -    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -64,7 +70,7 @@ void shuffleDigits(Grid& grid, int size, std::mt19937& rng) {
     std::iota(numMap.begin(), numMap.end(), 0); 
     std::shuffle(numMap.begin() + 1, numMap.end(), rng);
 
-    for (auto& row : grid) {
+    for (auto& row : grid) {      // Auto cause rows datatype is vector
         for (int& cell : row) {
             cell = numMap[cell]; // Maps grid cell to randomized value
         }
@@ -169,7 +175,8 @@ void cliFlags(int argc, char* argv[], int &blockDim, double &removalRatio) {
 int main(int argc, char* argv[]) {
     std::random_device rd;
     std::mt19937 rng(rd());
-
+    
+    // Default values that get overwritten by cli flags
     int blockDim = 3;
     double removalRatio = 0.50;
 
@@ -180,15 +187,17 @@ int main(int argc, char* argv[]) {
     std::cout << " Sudoku Generator - " << size << "x" << size << "\n";
     std::cout << "=========================================\n\n";
 
+    // Create solution grid
     Grid solution = generateLatinSquare(blockDim);
     shuffleGrid(solution, blockDim, rng);
-
+    
+    // Create puzzle grid
     Grid puzzle = solution;
     zeroOutCells(puzzle, blockDim, removalRatio, rng);
 
+    // Print both grids to stdout
     std::cout << "-------- PUZZLE --------\n";
     printGrid(puzzle, blockDim);
-
     std::cout << "-------- SOLUTION --------\n";
     printGrid(solution, blockDim);
 
@@ -205,15 +214,15 @@ Mandatory -----------------------
     - Type checks
     - Bounds checks
 - Sudoku rule checking
-    - Obviously if there are duplicate numbers in the
-    same row, column, or band
+    - If there are duplicate numbers in the 
+      same row, column, or band sector
 
 Nice-To-Haves -------------------
 - RNG seeding determinism
     - 2 different mt19937 rng devices with the 
-    same seed should produce the same output
+      same seed should produce the same output
         - Might want to "replay" specific grid states 
-        for testing or just replaying the same puzzle
+          for testing or just replaying the same puzzle
 
 - Removal ratio accuracy
     - Odd numbers & rounding behavior
