@@ -40,7 +40,14 @@ Prints the text inside of a flexible box that will follow the total dimensions o
 
 This prints two centered lines and between it your text. Rather than caring only about the FOLLOWNING cli argument, `-titlecard` prints all arguments after it as titlecard items.
 
-
+```
+       1. Full Metal Achemist Brotherhood
+                   2. Berserk
+                 3. Vinland Saga
+                    4. Bleach
+                 5. Shaman King
+                   6. Inuyasha
+```
 
 
 
