@@ -75,18 +75,18 @@ void randomLocation(){
     termSize = setTermSize(termSize);
 
     for (;;){
-        //clearScreen();
+        // clearScreen(); // uncommenting this makes it spazzy AF, kinda funny
         int randRow = (rand() % termSize.termHeight) + 1;
         int maxCol = termSize.termWidth - 1;
-        int randCol = (rand() % maxCol) + 1;
+        int randCol = (rand() % maxCol + 1);
 
         posi.row = randRow;
-        posi.col = randCol - 2;
+        posi.col = randCol;
         printf("\033[%d;%dH", posi.row, posi.col);
         printf("\033[101m  \033[0m");   // 10 characters wide
 
         fflush(stdout);
-        usleep(8000);
+        usleep(3000);
     }
 
 }
@@ -95,15 +95,17 @@ void randomLocation(){
 void cliFlags(int argc, char **argv){
     for (int i = 0; i < argc; i++) {
         if (strcmpr(argv[i], "--random")) {
+            termSettings = enterCustomTermMode();
             randomLocation();
         } else if (strcmpr(argv[i], "--snake")) {
+            termSettings = enterCustomTermMode();
             snake();
         } else if (argc == 1 || strcmpr(argv[i], "--help")) {
             printf("-- Help Menu ---\r\n");  
             printf("-random\r\n");
             printf("\tPrints to screen at random locations\r\n");  
             printf("-snake\r\n");  
-            printf("\tSnakes across the screen from left to right, up to down\r\n");  
+            printf("\tSnakes across the screen from left to right, up to down\r\n");
         }
     }
 }
@@ -113,7 +115,7 @@ int main(int argc, char **argv)
 {
     signal(SIGINT, handle_sigint);
     
-    termSettings = enterCustomTermMode();
+    // termSettings = enterCustomTermMode();
     
     cliFlags(argc, argv);
 
