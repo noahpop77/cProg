@@ -1,8 +1,6 @@
 # Notes
 
 `gitupdate` - Push github updates in 1 go
-`./run` - helper script to run program
-
 
 # NOB
 
@@ -12,7 +10,9 @@ command that will run:
 - Running the nob build executable
 - and in turn running our program
 
-`gcc -Wall -Wextra -o runnob nob.c && ./runnob && ./build/term`
+```
+gcc -Wall -Wextra -o runnob nob.c
+```
 
 # Bootstrapping The Program
 
@@ -22,35 +22,13 @@ From here all you need to do to bootstrap your program execution to execution is
 
 > Even if you change the `nob.c` code, ./runnob will check if there were changes made, rebuild the nob binary, and continue with execution.
 
-# CLI Flags
+# Flags
 
-`no flags`
+### --random
 
-When no flags are provided it will run its default printout.
+This flag makes the program fill in random cells of the screen with a red colored cell 
 
----
+### --snake
 
-`-box "text"`
-
-Prints the text inside of a flexible box that will follow the total dimensions of half the height and half the width of the current terminal.
-
----
-
-`-titlecard "1. Full Metal Achemist Brotherhood" "2. Berserk" "3. Vinland Saga" "4. Bleach" "5. Shaman King" "6. Inuyasha"`
-
-This prints two centered lines and between it your text. Rather than caring only about the FOLLOWNING cli argument, `-titlecard` prints all arguments after it as titlecard items.
-
-```
-       1. Full Metal Achemist Brotherhood
-                   2. Berserk
-                 3. Vinland Saga
-                    4. Bleach
-                 5. Shaman King
-                   6. Inuyasha
-```
-
-
-
-### Possible Projects
-
-- Hex viewer for binaries
+This flag makes the program drag a snake across the screen from left to right and top to bottom
+it will eventually loop back around to the top of the screen.
